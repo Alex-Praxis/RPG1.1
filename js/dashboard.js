@@ -2,6 +2,7 @@ import { SCORES, TARGET } from './constants.js';
 import { state } from './state.js';
 import { calcPoints, rowScore, fmtMoney } from './compute.js';
 import { renderTodoList } from './tasks.js';
+import { renderDailiesForDashboard } from './dailies.js';
 
 // ── RENDER DASHBOARD ──
 export function renderDashboard() {
@@ -81,6 +82,9 @@ export function renderDashboard() {
     document.getElementById('today-preview').style.display = 'none';
     document.getElementById('today-empty').style.display   = 'block';
   }
+
+  // 渲染仪表盘上的日常任务（并列显示）
+  renderDailiesForDashboard();
 
   renderTodoList();
 }

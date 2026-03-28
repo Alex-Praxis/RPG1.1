@@ -57,28 +57,50 @@
     </div>
   </div>
 
-  <div class="card section">
-    <div class="card-title">快速录入</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-      <div><label>日期</label><input type="date" id="entry-date"></div>
-      <div><label>备注（可选）</label><input type="text" id="entry-note" placeholder="eg. 写完提案、去健身"></div>
-    </div>
-    <div id="type-selector" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
-      <button id="type-btn-N" class="btn" style="background:var(--red-dim);color:var(--red);border-color:#f0c0bb" onclick="selectType('N')"><strong>噪声</strong><br><span style="font-size:10px">N</span></button>
-      <button id="type-btn-A" class="btn" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)" onclick="selectType('A')"><strong>基线维持</strong><br><span style="font-size:10px">A</span></button>
-      <button id="type-btn-B" class="btn" style="background:var(--amber-dim);color:var(--amber);border-color:#f0d8a0" onclick="selectType('B')"><strong>小改善</strong><br><span style="font-size:10px">B</span></button>
-      <button id="type-btn-C" class="btn" style="background:var(--blue-dim);color:var(--blue);border-color:#b8d8f8" onclick="selectType('C')"><strong>核心/复利</strong><br><span style="font-size:10px">C</span></button>
-      <button id="type-btn-D" class="btn" style="background:var(--purple-dim);color:var(--purple);border-color:#e0ccf8" onclick="selectType('D')"><strong>极限考验</strong><br><span style="font-size:10px">D</span></button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
-      <button id="action-todo" class="btn" disabled onclick="submitTask('todo')" style="opacity:0.4;cursor:not-allowed;border-color:var(--border2)">+ 加入待办</button>
-    </div>
-  </div>
+  <!-- ══ 并列双栏：任务 + 日常 ══ -->
+  <div class="dashboard-grid">
+    <!-- 左栏：快速录入 + 待完成任务 -->
+    <div class="dashboard-left">
+      <div class="card section">
+        <div class="card-title">快速录入</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div><label>日期</label><input type="date" id="entry-date"></div>
+          <div><label>备注（可选）</label><input type="text" id="entry-note" placeholder="eg. 写完提案、去健身"></div>
+        </div>
+        <div id="type-selector" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
+          <button id="type-btn-N" class="btn" style="background:var(--red-dim);color:var(--red);border-color:#f0c0bb" onclick="selectType('N')"><strong>噪声</strong><br><span style="font-size:10px">N</span></button>
+          <button id="type-btn-A" class="btn" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)" onclick="selectType('A')"><strong>基线维持</strong><br><span style="font-size:10px">A</span></button>
+          <button id="type-btn-B" class="btn" style="background:var(--amber-dim);color:var(--amber);border-color:#f0d8a0" onclick="selectType('B')"><strong>小改善</strong><br><span style="font-size:10px">B</span></button>
+          <button id="type-btn-C" class="btn" style="background:var(--blue-dim);color:var(--blue);border-color:#b8d8f8" onclick="selectType('C')"><strong>核心/复利</strong><br><span style="font-size:10px">C</span></button>
+          <button id="type-btn-D" class="btn" style="background:var(--purple-dim);color:var(--purple);border-color:#e0ccf8" onclick="selectType('D')"><strong>极限考验</strong><br><span style="font-size:10px">D</span></button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
+          <button id="action-todo" class="btn" disabled onclick="submitTask('todo')" style="opacity:0.4;cursor:not-allowed;border-color:var(--border2)">+ 加入待办</button>
+        </div>
+      </div>
 
-  <div class="card section">
-    <div class="card-title">待完成任务</div>
-    <div id="todo-list" style="display:grid;gap:10px"></div>
+      <div class="card section">
+        <div class="card-title">待完成任务</div>
+        <div id="todo-list" style="display:grid;gap:10px"></div>
+      </div>
+    </div>
+
+    <!-- 右栏：今日日常 + 今日已完成（日常） -->
+    <div class="dashboard-right">
+      <div class="card section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="card-title" style="margin:0">今日日常</div>
+          <button class="btn btn-sm btn-primary" onclick="openAddDailyModal()">+ 添加</button>
+        </div>
+        <div id="dl-due-list-dashboard" style="display:grid;gap:10px"></div>
+      </div>
+
+      <div class="card section" id="dl-done-section-dashboard" style="display:none">
+        <div class="card-title">今日已完成（日常）</div>
+        <div id="dl-done-list-dashboard"></div>
+      </div>
+    </div>
   </div>
 
   <div class="card section">

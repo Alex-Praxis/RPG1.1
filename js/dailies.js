@@ -168,37 +168,38 @@ export function saveDaily() {
   toast(`已添加日常：${name}`);
 }
 
-// ── RENDER ──
-export function renderDailies() {
+// ── HELPERS ──
+// 提取数据逻辑，便于复用
+function getDailiesForToday() {
   const today = todayStr();
-  const due   = state.dailies.filter(isDueToday);
-  const done  = state.dailies.filter(d => d.lastCompleted === today && !isDueToday(d));
-  const all   = state.dailies;
+  return {
+    today,
+    due: state.dailies.filter(isDueToday),
+    done: state.dailies.filter(d => d.lastCompleted === today && !isDueToday(d)),
+    all: state.dailies
+  };
+}
 
-  // ── 今日待完成 ──
-  const dueEl = document.getElementById('dl-due-list');
-  dueEl.innerHTML = due.length === 0
-    ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无待完成任务 🎉</div>'
-    : due.map(d => {
-        const color = TYPE_COLORS[d.type];
-        return `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px">
-            <div>
-              <div style="font-weight:500;font-size:14px;color:var(--text);margin-bottom:4px">${d.name}</div>
-              <div style="font-size:11px;color:var(--text3);display:flex;gap:10px;align-items:center">
-                <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
-                <span>${freqLabel(d)}</span>
-                ${d.streak > 0 ? `<span style="color:var(--amber);font-weight:600">🔥 ${d.streak} 天连续</span>` : ''}
-              </div>
-            </div>
-            <button class="btn btn-sm btn-primary" style="background:${color};border-color:${color};white-space:nowrap" onclick="completeDaily(${d.id})">✓ 完成</button>
-          </div>`;
-      }).join('');
+// 渲染单条待完成日常任务的 HTML
+function renderDailyCard(d) {
+  const color = TYPE_COLORS[d.type];
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px">
+      <div>
+        <div style="font-weight:500;font-size:14px;color:var(--text);margin-bottom:4px">${d.name}</div>
+        <div style="font-size:11px;color:var(--text3);display:flex;gap:10px;align-items:center">
+          <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
+          <span>${freqLabel(d)}</span>
+          ${d.streak > 0 ? `<span style="color:var(--amber);font-weight:600">🔥 ${d.streak} 天连续</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" style="background:${color};border-color:${color};white-space:nowrap" onclick="completeDaily(${d.id})">✓ 完成</button>
+    </div>`;
+}
 
-  // ── 今日已完成 ──
-  const doneEl = document.getElementById('dl-done-list');
-  document.getElementById('dl-done-section').style.display = done.length > 0 ? 'block' : 'none';
-  doneEl.innerHTML = done.map(d => `
+// 渲染单条已完成日常任务的 HTML
+function renderDoneCard(d) {
+  return `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;opacity:.55">
       <div style="display:flex;gap:10px;align-items:center">
         <span style="color:var(--green);font-size:16px">✓</span>
@@ -206,7 +207,24 @@ export function renderDailies() {
         <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
         ${d.streak > 0 ? `<span style="font-size:11px;color:var(--amber)">🔥 ${d.streak}</span>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+}
+
+// ── RENDER ──
+// 完整渲染（用于 page-dailies）
+export function renderDailies() {
+  const { today, due, done, all } = getDailiesForToday();
+
+  // ── 今日待完成 ──
+  const dueEl = document.getElementById('dl-due-list');
+  dueEl.innerHTML = due.length === 0
+    ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无待完成任务 🎉</div>'
+    : due.map(renderDailyCard).join('');
+
+  // ── 今日已完成 ──
+  const doneEl = document.getElementById('dl-done-list');
+  document.getElementById('dl-done-section').style.display = done.length > 0 ? 'block' : 'none';
+  doneEl.innerHTML = done.map(renderDoneCard).join('');
 
   // ── 全部日常（管理表格）──
   const allEl = document.getElementById('dl-all-list');
@@ -225,4 +243,25 @@ export function renderDailies() {
           <td><button class="btn btn-sm btn-danger" onclick="deleteDaily(${d.id})">删</button></td>
         </tr>`;
       }).join('');
+}
+
+// 简化渲染（用于 dashboard）
+export function renderDailiesForDashboard() {
+  const { due, done } = getDailiesForToday();
+
+  // ── 今日待完成 ──
+  const dueEl = document.getElementById('dl-due-list-dashboard');
+  if (!dueEl) return;  // 安全检查：dashboard 上日常容器可能尚未渲染
+
+  dueEl.innerHTML = due.length === 0
+    ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无日常 🎉</div>'
+    : due.map(renderDailyCard).join('');
+
+  // ── 今日已完成 ──
+  const doneEl = document.getElementById('dl-done-list-dashboard');
+  const doneSecEl = document.getElementById('dl-done-section-dashboard');
+  if (!doneEl || !doneSecEl) return;  // 安全检查
+
+  doneSecEl.style.display = done.length > 0 ? 'block' : 'none';
+  doneEl.innerHTML = done.map(renderDoneCard).join('');
 }
