@@ -10,24 +10,28 @@ export function init(renderAllFn) {
   _renderAll = renderAllFn;
 }
 
+// ── SHARED: render task log rows (reused by dashboard + full log) ──
+export function renderLogRows(entries) {
+  return entries.map(e => {
+    const sc  = rowScore(e);
+    const col = sc >= 0 ? 'var(--green)' : 'var(--red)';
+    const idx = state.taskLog.indexOf(e);
+    return `<tr>
+      <td class="log-date">${e.date}</td>
+      <td>${e.N||0}</td><td>${e.A||0}</td><td>${e.B||0}</td><td>${e.C||0}</td><td>${e.D||0}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:${col}">${sc >= 0 ? '+' : ''}${sc}</td>
+      <td style="color:var(--text2);font-size:12px">${e.note||''}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteTask(${idx})">删</button></td>
+    </tr>`;
+  }).join('');
+}
+
 // ── RENDER FULL LOG ──
 export function renderFullLog() {
   const sorted = [...state.taskLog].sort((a, b) => b.date.localeCompare(a.date));
   document.getElementById('full-log').innerHTML = sorted.length === 0
-    ? '<tr><td colspan="10" style="color:var(--text3);text-align:center;padding:28px">暂无记录</td></tr>'
-    : sorted.map(e => {
-        const sc  = rowScore(e);
-        const col = sc >= 0 ? 'var(--green)' : 'var(--red)';
-        const idx = state.taskLog.indexOf(e);
-        return `<tr>
-          <td class="log-date">${e.date}</td>
-          <td>${e.N||0}</td><td>${e.A||0}</td><td>${e.B||0}</td><td>${e.C||0}</td><td>${e.D||0}</td>
-          <td style="font-family:var(--mono);font-weight:700;color:${col}">${sc >= 0 ? '+' : ''}${sc}</td>
-          <td>${e.attr ? `<span class="pill">${e.attr}</span>` : ''}</td>
-          <td style="color:var(--text2);font-size:12px">${e.note||''}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="deleteTask(${idx})">删</button></td>
-        </tr>`;
-      }).join('');
+    ? '<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:28px">暂无记录</td></tr>'
+    : renderLogRows(sorted);
 }
 
 // ── DELETE TASK ──

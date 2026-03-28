@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { calcPoints, rowScore, fmtMoney } from './compute.js';
 import { renderTodoList } from './tasks.js';
 import { renderDailiesForDashboard } from './dailies.js';
+import { renderLogRows } from './log.js';
 
 // ── RENDER DASHBOARD ──
 export function renderDashboard() {
@@ -50,19 +51,7 @@ export function renderDashboard() {
   const sorted = [...state.taskLog].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   document.getElementById('recent-log').innerHTML = sorted.length === 0
     ? '<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:28px">暂无记录 — 快速录入开始</td></tr>'
-    : sorted.map(e => {
-        const sc  = rowScore(e);
-        const col = sc >= 0 ? 'var(--green)' : 'var(--red)';
-        const td  = k => e[k] ? `<span class="tag tag-${k}">${e[k]}</span>` : `<span style="color:var(--border2)">—</span>`;
-        const idx = state.taskLog.indexOf(e);
-        return `<tr>
-          <td class="log-date">${e.date}</td>
-          ${['N','A','B','C','D'].map(td).join('')}
-          <td style="font-family:var(--mono);font-weight:700;color:${col}">${sc >= 0 ? '+' : ''}${sc}</td>
-          <td style="color:var(--text2);font-size:12px">${e.note||''}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="deleteTask(${idx})">删</button></td>
-        </tr>`;
-      }).join('');
+    : renderLogRows(sorted);
 
   // Today summary
   const today = new Date().toISOString().split('T')[0];

@@ -44,9 +44,23 @@ function renderAll() {
   renderTodoList();
   const active = document.querySelector('.page.active');
   if (active?.id === 'page-rewards') renderRewards();
-  if (active?.id === 'page-finance') renderFinance();
-  if (active?.id === 'page-log')     renderFullLog();
   if (active?.id === 'page-dailies') renderDailies();
+  if (active?.id === 'page-data') {
+    const activeDataTab = document.querySelector('.data-tab.active');
+    const tabId = activeDataTab?.dataset.tab;
+    if (tabId === 'finance') renderFinance();
+    if (tabId === 'log')     renderFullLog();
+  }
+}
+
+// ── DATA SUB-TAB NAVIGATION ──
+function showDataTab(tabId, btn) {
+  document.querySelectorAll('.data-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('data-finance').style.display = tabId === 'finance' ? '' : 'none';
+  document.getElementById('data-log').style.display     = tabId === 'log'     ? '' : 'none';
+  if (tabId === 'finance') renderFinance();
+  if (tabId === 'log')     renderFullLog();
 }
 
 // ── PAGE NAVIGATION ──
@@ -56,9 +70,19 @@ function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'rewards') renderRewards();
-  if (id === 'finance') renderFinance();
-  if (id === 'log')     renderFullLog();
   if (id === 'dailies') renderDailies();
+  if (id === 'data') {
+    const activeDataTab = document.querySelector('.data-tab.active');
+    if (activeDataTab) {
+      const tabId = activeDataTab.dataset.tab;
+      if (tabId === 'finance') renderFinance();
+      if (tabId === 'log')     renderFullLog();
+    } else {
+      // Default: show finance sub-tab
+      const firstTab = document.querySelector('.data-tab');
+      if (firstTab) showDataTab(firstTab.dataset.tab, firstTab);
+    }
+  }
 }
 
 // ── INIT: inject renderAll into domain modules ──
@@ -91,6 +115,7 @@ if (state.syncCfg.apiKey && state.syncCfg.binId) {
 // ES module scope is not global; inline onclick= attributes resolve via window.
 // All functions referenced in HTML are bound here.
 window.showPage             = showPage;
+window.showDataTab          = showDataTab;
 // Sync
 window.openSyncSetup        = openSyncSetup;
 window.clearSync            = clearSync;
@@ -128,3 +153,12 @@ window.updateFreqUI         = updateFreqUI;
 // UI
 window.closeModal           = closeModal;
 window.openModal            = openModal;
+
+// ── DROPDOWN: close on outside click ──
+document.addEventListener('click', e => {
+  const toggle   = document.getElementById('difficulty-toggle');
+  const dropdown = document.getElementById('difficulty-dropdown');
+  if (toggle && dropdown && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});

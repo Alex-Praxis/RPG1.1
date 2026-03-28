@@ -211,28 +211,15 @@ function renderDoneCard(d) {
 }
 
 // ── RENDER ──
-// 完整渲染（用于 page-dailies）
+// 渲染 page-dailies（仅管理表格）
 export function renderDailies() {
-  const { today, due, done, all } = getDailiesForToday();
-
-  // ── 今日待完成 ──
-  const dueEl = document.getElementById('dl-due-list');
-  dueEl.innerHTML = due.length === 0
-    ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无待完成任务 🎉</div>'
-    : due.map(renderDailyCard).join('');
-
-  // ── 今日已完成 ──
-  const doneEl = document.getElementById('dl-done-list');
-  document.getElementById('dl-done-section').style.display = done.length > 0 ? 'block' : 'none';
-  doneEl.innerHTML = done.map(renderDoneCard).join('');
-
-  // ── 全部日常（管理表格）──
+  const { today, all } = getDailiesForToday();
   const allEl = document.getElementById('dl-all-list');
+  if (!allEl) return;
   allEl.innerHTML = all.length === 0
     ? '<tr><td colspan="5" style="color:var(--text3);text-align:center;padding:28px">暂无日常任务 — 点击「+ 添加」开始</td></tr>'
     : all.map(d => {
-        const isDone  = d.lastCompleted === today;
-        const isToday = isDueToday(d) || isDone;
+        const isDone = d.lastCompleted === today;
         return `<tr style="${isDone ? 'opacity:.5' : ''}">
           <td style="font-weight:500;color:var(--text)">
             ${isDone ? '<span style="color:var(--green);margin-right:6px">✓</span>' : ''}${d.name}
@@ -245,23 +232,16 @@ export function renderDailies() {
       }).join('');
 }
 
-// 简化渲染（用于 dashboard）
+// 仪表盘渲染（单容器 + 分隔线）
 export function renderDailiesForDashboard() {
   const { due, done } = getDailiesForToday();
-
-  // ── 今日待完成 ──
-  const dueEl = document.getElementById('dl-due-list-dashboard');
-  if (!dueEl) return;  // 安全检查：dashboard 上日常容器可能尚未渲染
-
-  dueEl.innerHTML = due.length === 0
+  const container = document.getElementById('dl-today-dailies');
+  if (!container) return;
+  const dueHtml  = due.map(renderDailyCard).join('');
+  const doneHtml = done.length > 0
+    ? '<hr class="divider" style="margin:10px 0">' + done.map(renderDoneCard).join('')
+    : '';
+  container.innerHTML = due.length === 0 && done.length === 0
     ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无日常 🎉</div>'
-    : due.map(renderDailyCard).join('');
-
-  // ── 今日已完成 ──
-  const doneEl = document.getElementById('dl-done-list-dashboard');
-  const doneSecEl = document.getElementById('dl-done-section-dashboard');
-  if (!doneEl || !doneSecEl) return;  // 安全检查
-
-  doneSecEl.style.display = done.length > 0 ? 'block' : 'none';
-  doneEl.innerHTML = done.map(renderDoneCard).join('');
+    : dueHtml + doneHtml;
 }

@@ -14,17 +14,17 @@ export function init(renderAllFn) {
 // ── TYPE SELECTION ──
 export function selectType(type) {
   selectedType = type;
-  ['N','A','B','C','D'].forEach(t => {
-    const btn = document.getElementById('type-btn-' + t);
-    if (t === type) {
-      btn.style.outline      = '3px solid ' + TYPE_COLORS[t];
-      btn.style.outlineOffset = '2px';
-      btn.style.fontWeight   = '700';
-    } else {
-      btn.style.outline    = 'none';
-      btn.style.fontWeight = '';
-    }
-  });
+  // Highlight selected item in dropdown
+  document.querySelectorAll('.diff-item').forEach(btn => btn.classList.remove('selected'));
+  const item = document.getElementById('type-btn-' + type);
+  if (item) item.classList.add('selected');
+  // Update toggle label
+  const label = document.getElementById('difficulty-label');
+  if (label) { label.textContent = typeLabels[type]; label.style.color = TYPE_COLORS[type]; }
+  // Close dropdown
+  const dropdown = document.getElementById('difficulty-dropdown');
+  if (dropdown) dropdown.classList.remove('open');
+  // Enable action buttons
   const btnDone = document.getElementById('action-done');
   const btnTodo = document.getElementById('action-todo');
   btnDone.disabled = false; btnDone.style.opacity = '1'; btnDone.style.cursor = 'pointer';
@@ -56,11 +56,9 @@ export function submitTask(action) {
   // 重置表单与按钮状态
   document.getElementById('entry-note').value = '';
   selectedType = null;
-  ['N','A','B','C','D'].forEach(t => {
-    const btn = document.getElementById('type-btn-' + t);
-    btn.style.outline = 'none';
-    btn.style.fontWeight = '';
-  });
+  document.querySelectorAll('.diff-item').forEach(btn => btn.classList.remove('selected'));
+  const label = document.getElementById('difficulty-label');
+  if (label) { label.textContent = '选择难度 ▾'; label.style.color = ''; }
   const btnDone = document.getElementById('action-done');
   const btnTodo = document.getElementById('action-todo');
   btnDone.disabled = true; btnDone.style.opacity = '0.4'; btnDone.style.cursor = 'not-allowed';

@@ -14,10 +14,9 @@
     OS v1
   </div>
   <button class="nav-tab active" onclick="showPage('dashboard',this)">仪表盘</button>
-  <button class="nav-tab" onclick="showPage('rewards',this)">奖励</button>
-  <button class="nav-tab" onclick="showPage('finance',this)">财务</button>
-  <button class="nav-tab" onclick="showPage('log',this)">日志</button>
   <button class="nav-tab" onclick="showPage('dailies',this)">日常</button>
+  <button class="nav-tab" onclick="showPage('rewards',this)">奖励</button>
+  <button class="nav-tab" onclick="showPage('data',this)">数据</button>
   <div class="nav-right">
     <button class="btn btn-sm" onclick="openSyncSetup()" style="font-family:var(--mono);font-size:11px;letter-spacing:.05em">☁ 同步</button>
     <button class="btn btn-success btn-sm" onclick="exportData()">↓ 备份</button>
@@ -67,12 +66,39 @@
           <div><label>日期</label><input type="date" id="entry-date"></div>
           <div><label>备注（可选）</label><input type="text" id="entry-note" placeholder="eg. 写完提案、去健身"></div>
         </div>
-        <div id="type-selector" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
-          <button id="type-btn-N" class="btn" style="background:var(--red-dim);color:var(--red);border-color:#f0c0bb" onclick="selectType('N')"><strong>噪声</strong><br><span style="font-size:10px">N</span></button>
-          <button id="type-btn-A" class="btn" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)" onclick="selectType('A')"><strong>基线维持</strong><br><span style="font-size:10px">A</span></button>
-          <button id="type-btn-B" class="btn" style="background:var(--amber-dim);color:var(--amber);border-color:#f0d8a0" onclick="selectType('B')"><strong>小改善</strong><br><span style="font-size:10px">B</span></button>
-          <button id="type-btn-C" class="btn" style="background:var(--blue-dim);color:var(--blue);border-color:#b8d8f8" onclick="selectType('C')"><strong>核心/复利</strong><br><span style="font-size:10px">C</span></button>
-          <button id="type-btn-D" class="btn" style="background:var(--purple-dim);color:var(--purple);border-color:#e0ccf8" onclick="selectType('D')"><strong>极限考验</strong><br><span style="font-size:10px">D</span></button>
+        <!-- 难度下拉菜单 -->
+        <div class="difficulty-wrap">
+          <button id="difficulty-toggle" class="difficulty-toggle"
+            onclick="document.getElementById('difficulty-dropdown').classList.toggle('open')">
+            <span id="difficulty-label">选择难度 ▾</span>
+          </button>
+          <div id="difficulty-dropdown" class="difficulty-dropdown">
+            <button class="diff-item" id="type-btn-N" onclick="selectType('N')">
+              <span class="diff-key" style="color:var(--red)">N</span>
+              <span class="diff-name">噪声</span>
+              <span class="diff-score" style="color:var(--red)">−10</span>
+            </button>
+            <button class="diff-item" id="type-btn-A" onclick="selectType('A')">
+              <span class="diff-key" style="color:var(--text2)">A</span>
+              <span class="diff-name">基线维持</span>
+              <span class="diff-score">+2</span>
+            </button>
+            <button class="diff-item" id="type-btn-B" onclick="selectType('B')">
+              <span class="diff-key" style="color:var(--amber)">B</span>
+              <span class="diff-name">小改善</span>
+              <span class="diff-score">+5</span>
+            </button>
+            <button class="diff-item" id="type-btn-C" onclick="selectType('C')">
+              <span class="diff-key" style="color:var(--blue)">C</span>
+              <span class="diff-name">核心/复利</span>
+              <span class="diff-score">+30</span>
+            </button>
+            <button class="diff-item" id="type-btn-D" onclick="selectType('D')">
+              <span class="diff-key" style="color:var(--purple)">D</span>
+              <span class="diff-name">极限考验</span>
+              <span class="diff-score">+125</span>
+            </button>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
@@ -86,19 +112,14 @@
       </div>
     </div>
 
-    <!-- 右栏：今日日常 + 今日已完成（日常） -->
+    <!-- 右栏：今日日常（单卡片） -->
     <div class="dashboard-right">
       <div class="card section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <div class="card-title" style="margin:0">今日日常</div>
           <button class="btn btn-sm btn-primary" onclick="openAddDailyModal()">+ 添加</button>
         </div>
-        <div id="dl-due-list-dashboard" style="display:grid;gap:10px"></div>
-      </div>
-
-      <div class="card section" id="dl-done-section-dashboard" style="display:none">
-        <div class="card-title">今日已完成（日常）</div>
-        <div id="dl-done-list-dashboard"></div>
+        <div id="dl-today-dailies" style="display:grid;gap:10px"></div>
       </div>
     </div>
   </div>
@@ -119,6 +140,22 @@
     <table class="tbl">
       <thead><tr><th>日期</th><th>N</th><th>A</th><th>B</th><th>C</th><th>D</th><th>小计</th><th>备注</th><th></th></tr></thead>
       <tbody id="recent-log"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ PAGE: 日常 ══ -->
+<div class="page" id="page-dailies">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="card-title" style="margin:0">全部日常</div>
+      <button class="btn btn-sm btn-primary" onclick="openAddDailyModal()">+ 添加日常</button>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr><th>任务</th><th>类型</th><th>频率</th><th>连续</th><th></th></tr>
+      </thead>
+      <tbody id="dl-all-list"></tbody>
     </table>
   </div>
 </div>
@@ -161,93 +198,68 @@
   </div>
 </div>
 
-<!-- ══ PAGE: 财务 ══ -->
-<div class="page" id="page-finance">
-  <div class="card section">
-    <div class="card-title">财务汇总</div>
-    <div class="finance-summary">
-      <div class="finance-cell"><div class="finance-cell-label">总支出</div><div class="finance-cell-value" id="f-total-out" style="color:var(--red)">¥0</div></div>
-      <div class="finance-cell"><div class="finance-cell-label">总收入</div><div class="finance-cell-value" id="f-total-in" style="color:var(--green)">¥0</div></div>
-      <div class="finance-cell"><div class="finance-cell-label">净收入</div><div class="finance-cell-value" id="f-total-net">¥0</div></div>
-    </div>
-    <div style="margin-top:14px;display:flex;gap:28px">
-      <div><div style="font-size:11px;color:var(--text3)">日均支出</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)" id="f-daily-out">¥0</div></div>
-      <div><div style="font-size:11px;color:var(--text3)">日均净收入</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)" id="f-daily-in">¥0</div></div>
-    </div>
+<!-- ══ PAGE: 数据 ══ -->
+<div class="page" id="page-data">
+  <div class="data-tabs">
+    <button class="data-tab active" data-tab="finance" onclick="showDataTab('finance',this)">财务</button>
+    <button class="data-tab" data-tab="log" onclick="showDataTab('log',this)">任务日志</button>
   </div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-title">录入月度数据</div>
-      <div class="form-row"><label>清点月份</label><input type="month" id="f-month"></div>
-      <div class="form-row"><label>总支出 (¥)</label><input type="number" id="f-out" placeholder="0"></div>
-      <div class="form-row"><label>总收入 (¥)</label><input type="number" id="f-in" placeholder="0"></div>
-      <div class="form-row"><label>分析备注</label><textarea id="f-note" rows="2" placeholder="主要支出原因..."></textarea></div>
-      <button class="btn btn-primary" style="width:100%" onclick="addFinanceEntry()">记录</button>
-    </div>
-    <div class="card">
-      <div class="card-title">月度预算</div>
-      <div id="budget-list"></div>
-      <div class="divider"></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--text2)">预算合计</span>
-        <span style="font-family:var(--mono);font-weight:700;color:var(--text)" id="budget-total">¥0</span>
+
+  <!-- 财务子页 -->
+  <div id="data-finance">
+    <div class="card section">
+      <div class="card-title">财务汇总</div>
+      <div class="finance-summary">
+        <div class="finance-cell"><div class="finance-cell-label">总支出</div><div class="finance-cell-value" id="f-total-out" style="color:var(--red)">¥0</div></div>
+        <div class="finance-cell"><div class="finance-cell-label">总收入</div><div class="finance-cell-value" id="f-total-in" style="color:var(--green)">¥0</div></div>
+        <div class="finance-cell"><div class="finance-cell-label">净收入</div><div class="finance-cell-value" id="f-total-net">¥0</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:28px">
+        <div><div style="font-size:11px;color:var(--text3)">日均支出</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--red)" id="f-daily-out">¥0</div></div>
+        <div><div style="font-size:11px;color:var(--text3)">日均净收入</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green)" id="f-daily-in">¥0</div></div>
       </div>
     </div>
-  </div>
-  <div class="card" style="margin-top:16px">
-    <div class="card-title">月度明细</div>
-    <table class="tbl">
-      <thead><tr><th>月份</th><th>支出</th><th>收入</th><th>净收入</th><th>分析</th><th></th></tr></thead>
-      <tbody id="finance-log"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ══ PAGE: 日志 ══ -->
-<div class="page" id="page-log">
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="card-title" style="margin:0">完整任务日志</div>
-      <button class="btn btn-sm btn-danger" onclick="confirmClear()">清空日志</button>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">录入月度数据</div>
+        <div class="form-row"><label>清点月份</label><input type="month" id="f-month"></div>
+        <div class="form-row"><label>总支出 (¥)</label><input type="number" id="f-out" placeholder="0"></div>
+        <div class="form-row"><label>总收入 (¥)</label><input type="number" id="f-in" placeholder="0"></div>
+        <div class="form-row"><label>分析备注</label><textarea id="f-note" rows="2" placeholder="主要支出原因..."></textarea></div>
+        <button class="btn btn-primary" style="width:100%" onclick="addFinanceEntry()">记录</button>
+      </div>
+      <div class="card">
+        <div class="card-title">月度预算</div>
+        <div id="budget-list"></div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span style="color:var(--text2)">预算合计</span>
+          <span style="font-family:var(--mono);font-weight:700;color:var(--text)" id="budget-total">¥0</span>
+        </div>
+      </div>
     </div>
-    <table class="tbl">
-      <thead><tr><th>日期</th><th>N</th><th>A</th><th>B</th><th>C</th><th>D</th><th>小计</th><th>属性</th><th>备注</th><th></th></tr></thead>
-      <tbody id="full-log"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ══ PAGE: 日常 ══ -->
-<div class="page" id="page-dailies">
-
-  <!-- 今日待完成 -->
-  <div class="card section">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="card-title" style="margin:0">今日待完成</div>
-      <button class="btn btn-sm btn-primary" onclick="openAddDailyModal()">+ 添加日常</button>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">月度明细</div>
+      <table class="tbl">
+        <thead><tr><th>月份</th><th>支出</th><th>收入</th><th>净收入</th><th>分析</th><th></th></tr></thead>
+        <tbody id="finance-log"></tbody>
+      </table>
     </div>
-    <div id="dl-due-list" style="display:grid;gap:10px"></div>
   </div>
 
-  <!-- 今日已完成 -->
-  <div class="card section" id="dl-done-section" style="display:none">
-    <div class="card-title">今日已完成</div>
-    <div id="dl-done-list"></div>
+  <!-- 日志子页 -->
+  <div id="data-log" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="card-title" style="margin:0">完整任务日志</div>
+        <button class="btn btn-sm btn-danger" onclick="confirmClear()">清空日志</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>日期</th><th>N</th><th>A</th><th>B</th><th>C</th><th>D</th><th>小计</th><th>备注</th><th></th></tr></thead>
+        <tbody id="full-log"></tbody>
+      </table>
+    </div>
   </div>
-
-  <!-- 全部日常管理 -->
-  <div class="card">
-    <div class="card-title">全部日常</div>
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>任务</th><th>类型</th><th>频率</th><th>连续</th><th></th>
-        </tr>
-      </thead>
-      <tbody id="dl-all-list"></tbody>
-    </table>
-  </div>
-
 </div>
 
 <!-- ══ MODAL: 添加奖励 ══ -->
