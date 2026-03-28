@@ -3,7 +3,6 @@ import { state } from './state.js';
 import { calcPoints, rowScore, fmtMoney } from './compute.js';
 import { renderTodoList } from './tasks.js';
 import { renderDailiesForDashboard } from './dailies.js';
-import { renderLogRows } from './log.js';
 
 // ── RENDER DASHBOARD ──
 export function renderDashboard() {
@@ -47,11 +46,30 @@ export function renderDashboard() {
       `<div class="countdown-item"><div class="countdown-num">${[days, weeks, months][i]}</div><div class="countdown-label">${l}</div></div>`
     ).join('');
 
-  // Recent log (last 10)
+  // Recent log (last 10) — compact activity feed
   const sorted = [...state.taskLog].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
-  document.getElementById('recent-log').innerHTML = sorted.length === 0
-    ? '<tr><td colspan="9" style="color:var(--text3);text-align:center;padding:28px">暂无记录 — 快速录入开始</td></tr>'
-    : renderLogRows(sorted);
+  const recentEl = document.getElementById('recent-log');
+  if (sorted.length === 0) {
+    recentEl.innerHTML = '<tr><td colspan="4" style="color:var(--text3);text-align:center;padding:24px">暂无记录</td></tr>';
+  } else {
+    recentEl.innerHTML = sorted.map(e => {
+      const sc   = rowScore(e);
+      const col  = sc >= 0 ? 'var(--green)' : 'var(--red)';
+      const idx  = state.taskLog.indexOf(e);
+      const date = e.date.slice(5).replace('-', '/');      // MM/DD
+      const tags = ['N','A','B','C','D']
+        .filter(k => e[k] > 0)
+        .map(k => `<span class="tag tag-${k}">${k}${e[k] > 1 ? '×'+e[k] : ''}</span>`)
+        .join(' ');
+      return `<tr>
+        <td class="log-date" style="white-space:nowrap">${date}</td>
+        <td>${tags}</td>
+        <td style="font-family:var(--mono);font-weight:700;color:${col};white-space:nowrap">${sc >= 0 ? '+' : ''}${sc}</td>
+        <td style="color:var(--text2);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.note||''}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteTask(${idx})">删</button></td>
+      </tr>`;
+    }).join('');
+  }
 
   // Today summary
   const today = new Date().toISOString().split('T')[0];
