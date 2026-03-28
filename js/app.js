@@ -31,7 +31,6 @@ import {
 } from './sync.js';
 import { exportData, importData } from './io.js';
 import {
-  renderDailies,
   init as initDailies,
   completeDaily, deleteDaily,
   openAddDailyModal, saveDaily, updateFreqUI,
@@ -44,7 +43,6 @@ function renderAll() {
   renderTodoList();
   const active = document.querySelector('.page.active');
   if (active?.id === 'page-rewards') renderRewards();
-  if (active?.id === 'page-dailies') renderDailies();
   if (active?.id === 'page-data') {
     const activeDataTab = document.querySelector('.data-tab.active');
     const tabId = activeDataTab?.dataset.tab;
@@ -70,7 +68,6 @@ function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'rewards') renderRewards();
-  if (id === 'dailies') renderDailies();
   if (id === 'data') {
     const activeDataTab = document.querySelector('.data-tab.active');
     if (activeDataTab) {

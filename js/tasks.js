@@ -101,21 +101,29 @@ export function renderTodoList() {
   const all        = [...todayTodos, ...otherTodos];
 
   const html = all.length === 0
-    ? '<div style="color:var(--text3);font-size:12px;padding:12px 0">暂无待完成任务</div>'
+    ? `<div style="text-align:center;padding:32px 16px;color:var(--text3)">
+        <div style="font-size:26px;margin-bottom:8px">☑</div>
+        <div style="font-size:12px">暂无待办任务</div>
+      </div>`
     : all.map(t => {
-        const colors   = {N:'var(--red)',A:'var(--text2)',B:'var(--amber)',C:'var(--blue)',D:'var(--purple)'};
-        const bgColors = {N:'var(--red-dim)',A:'var(--bg3)',B:'var(--amber-dim)',C:'var(--blue-dim)',D:'var(--purple-dim)'};
-        return `<div style="background:${bgColors[t.type]};border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:500;color:var(--text);margin-bottom:4px">${t.note||'（无备注）'}</div>
-            <div style="font-size:11px;color:var(--text3)">${t.date} · <span style="color:${colors[t.type]};font-weight:600">${typeLabels[t.type]}</span></div>
+        const colors = {N:'var(--red)',A:'var(--text2)',B:'var(--amber)',C:'var(--blue)',D:'var(--purple)'};
+        const color  = colors[t.type];
+        return `<div class="habit-card">
+          <div class="habit-check" style="background:${color}" onclick="completeTodoTask(${t.id})">✓</div>
+          <div class="habit-body">
+            <div class="habit-name">${t.note||'（无备注）'}</div>
+            <div class="habit-meta">
+              <span>${t.date}</span>
+              <span class="tag tag-${t.type}">${typeLabels[t.type]}</span>
+            </div>
           </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-sm" style="background:${colors[t.type]};color:#fff;border-color:${colors[t.type]};padding:6px 14px;font-size:12px" onclick="completeTodoTask(${t.id})">✓ 完成</button>
-            <button class="btn btn-sm btn-danger" style="padding:6px 10px;font-size:12px" onclick="deleteTodoTask(${t.id})">删</button>
+          <div class="habit-right">
+            <button class="btn btn-sm btn-danger" style="padding:4px 9px;font-size:11px" onclick="deleteTodoTask(${t.id})">删</button>
           </div>
         </div>`;
       }).join('');
 
   document.getElementById('todo-list').innerHTML = html;
+  const badge = document.getElementById('todo-count');
+  if (badge) badge.textContent = all.length;
 }

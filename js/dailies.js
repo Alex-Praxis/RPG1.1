@@ -180,33 +180,39 @@ function getDailiesForToday() {
   };
 }
 
-// 渲染单条待完成日常任务的 HTML
+// 渲染单条待完成日常任务的 HTML（Habitica 风格）
 function renderDailyCard(d) {
   const color = TYPE_COLORS[d.type];
   return `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px">
-      <div>
-        <div style="font-weight:500;font-size:14px;color:var(--text);margin-bottom:4px">${d.name}</div>
-        <div style="font-size:11px;color:var(--text3);display:flex;gap:10px;align-items:center">
+    <div class="habit-card">
+      <div class="habit-check" style="background:${color}" onclick="completeDaily(${d.id})">✓</div>
+      <div class="habit-body">
+        <div class="habit-name">${d.name}</div>
+        <div class="habit-meta">
           <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
           <span>${freqLabel(d)}</span>
-          ${d.streak > 0 ? `<span style="color:var(--amber);font-weight:600">🔥 ${d.streak} 天连续</span>` : ''}
+          ${d.streak > 0 ? `<span style="color:var(--amber)">🔥 ${d.streak}</span>` : ''}
         </div>
       </div>
-      <button class="btn btn-sm btn-primary" style="background:${color};border-color:${color};white-space:nowrap" onclick="completeDaily(${d.id})">✓ 完成</button>
+      <div class="habit-right"><span class="habit-streak">▶▶ ${d.streak}</span></div>
     </div>`;
 }
 
-// 渲染单条已完成日常任务的 HTML
+// 渲染单条已完成日常任务的 HTML（暗淡）
 function renderDoneCard(d) {
+  const color = TYPE_COLORS[d.type];
   return `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;opacity:.55">
-      <div style="display:flex;gap:10px;align-items:center">
-        <span style="color:var(--green);font-size:16px">✓</span>
-        <span style="font-size:13px;color:var(--text2)">${d.name}</span>
-        <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
-        ${d.streak > 0 ? `<span style="font-size:11px;color:var(--amber)">🔥 ${d.streak}</span>` : ''}
+    <div class="habit-card done">
+      <div class="habit-check" style="background:${color}">✓</div>
+      <div class="habit-body">
+        <div class="habit-name">${d.name}</div>
+        <div class="habit-meta">
+          <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
+          <span>${freqLabel(d)}</span>
+          ${d.streak > 0 ? `<span style="color:var(--amber)">🔥 ${d.streak}</span>` : ''}
+        </div>
       </div>
+      <div class="habit-right"><span class="habit-streak">▶▶ ${d.streak}</span></div>
     </div>`;
 }
 
@@ -232,16 +238,22 @@ export function renderDailies() {
       }).join('');
 }
 
-// 仪表盘渲染（单容器 + 分隔线）
+// 仪表盘渲染（Habitica 风格单容器）
 export function renderDailiesForDashboard() {
   const { due, done } = getDailiesForToday();
   const container = document.getElementById('dl-today-dailies');
   if (!container) return;
+  // 更新角标
+  const badge = document.getElementById('daily-count');
+  if (badge) badge.textContent = due.length;
   const dueHtml  = due.map(renderDailyCard).join('');
   const doneHtml = done.length > 0
-    ? '<hr class="divider" style="margin:10px 0">' + done.map(renderDoneCard).join('')
+    ? `<div style="height:1px;background:var(--border);margin:6px 0 8px"></div>` + done.map(renderDoneCard).join('')
     : '';
   container.innerHTML = due.length === 0 && done.length === 0
-    ? '<div style="color:var(--text3);font-size:12px;padding:14px 0">今日无日常 🎉</div>'
+    ? `<div style="text-align:center;padding:32px 16px;color:var(--text3)">
+        <div style="font-size:26px;margin-bottom:8px">🎉</div>
+        <div style="font-size:12px">今日日常全部完成</div>
+      </div>`
     : dueHtml + doneHtml;
 }
