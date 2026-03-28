@@ -5,6 +5,7 @@ import {
   init as initTasks,
   selectType, submitTask,
   completeTodoTask, deleteTodoTask,
+  addStep, removeStep, toggleStep,
 } from './tasks.js';
 import {
   renderRewards,
@@ -125,6 +126,9 @@ window.selectType           = selectType;
 window.submitTask           = submitTask;
 window.completeTodoTask     = completeTodoTask;
 window.deleteTodoTask       = deleteTodoTask;
+window.addStep              = addStep;
+window.removeStep           = removeStep;
+window.toggleStep           = toggleStep;
 // Rewards
 window.openAddReward        = openAddReward;
 window.saveReward           = saveReward;

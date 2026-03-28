@@ -101,6 +101,14 @@
           </button>
         </div>
       </div>
+      <!-- 子步骤（可选，仅加入待办时有意义） -->
+      <div id="steps-container" style="display:none;margin-bottom:10px">
+        <div id="step-inputs"></div>
+      </div>
+      <div style="margin-bottom:10px">
+        <button type="button" class="btn btn-sm" onclick="addStep()" style="font-size:12px;color:var(--text3)">+ 添加步骤</button>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0">
         <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
         <button id="action-todo" class="btn" disabled onclick="submitTask('todo')" style="opacity:0.4;cursor:not-allowed;border-color:var(--border2)">+ 加入待办</button>
