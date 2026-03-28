@@ -60,7 +60,14 @@
   <!-- ══ 并列双栏：[快速录入 + 待办] | [日常] ══ -->
   <div class="dashboard-grid section">
 
-    <!-- 左栏：快速录入 + 分割线 + 待办事项 -->
+    <!-- 左栏：Quest 标题 + 快速录入卡片 + 待办列表 -->
+    <div>
+    <div class="task-col-header">
+      <div class="task-col-title">
+        Quest
+        <span class="task-col-badge purple" id="todo-count">0</span>
+      </div>
+    </div>
     <div class="card">
       <!-- 快速录入 -->
       <div class="card-title">快速录入</div>
@@ -116,13 +123,8 @@
 
       <!-- 分割线 -->
       <hr class="divider" style="margin:18px 0 14px">
-
-      <!-- 待办事项 -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--text3);text-transform:uppercase">待办事项</span>
-        <span class="task-col-badge purple" id="todo-count" style="font-size:10px;padding:1px 7px">0</span>
-      </div>
       <div id="todo-list"></div>
+    </div>
     </div>
 
     <!-- 右栏：日常任务 -->
@@ -388,6 +390,37 @@
     <div class="form-actions">
       <button class="btn" onclick="closeModal('modal-daily')">取消</button>
       <button class="btn btn-primary" onclick="saveDaily()">添加日常</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: 修改待办任务 ══ -->
+<div class="modal-overlay" id="modal-todo">
+  <div class="modal">
+    <div class="modal-title">修改待办任务</div>
+    <div class="form-row"><label>备注</label><input type="text" id="edit-todo-note" placeholder="任务描述"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-row"><label>日期</label><input type="date" id="edit-todo-date"></div>
+      <div class="form-row">
+        <label>类型</label>
+        <select id="edit-todo-type">
+          <option value="N">N · 噪声 (−10)</option>
+          <option value="A">A · 基线维持 (+2)</option>
+          <option value="B">B · 小改善 (+5)</option>
+          <option value="C">C · 核心/复利 (+30)</option>
+          <option value="D">D · 极限考验 (+125)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>子步骤</label>
+      <div id="edit-step-inputs"></div>
+      <button type="button" class="btn btn-sm" onclick="addEditStep()"
+        style="margin-top:6px;font-size:12px;color:var(--text3)">+ 添加步骤</button>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('modal-todo')">取消</button>
+      <button class="btn btn-primary" onclick="saveTodoEdit()">保存</button>
     </div>
   </div>
 </div>

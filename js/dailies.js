@@ -4,7 +4,8 @@ import { triggerSave } from './sync.js';
 import { toast, openModal, closeModal } from './ui.js';
 
 // ── MODULE-PRIVATE ──
-let _renderAll = () => {};
+let _renderAll     = () => {};
+let editingDailyId = null;
 
 export function init(renderAllFn) {
   _renderAll = renderAllFn;
@@ -109,8 +110,29 @@ export function deleteDaily(id) {
   toast('日常任务已删除');
 }
 
+// ── EDIT DAILY MODAL ──
+export function openEditDailyModal(id) {
+  const daily = state.dailies.find(d => d.id === id);
+  if (!daily) return;
+  editingDailyId = id;
+  document.getElementById('dl-name').value  = daily.name;
+  document.getElementById('dl-type').value  = daily.type;
+  document.getElementById('dl-freq').value  = daily.frequency;
+  document.getElementById('dl-start').value = daily.startDate;
+  document.getElementById('dl-everyx').value = daily.everyX || 1;
+  ['0','1','2','3','4','5','6'].forEach(d => {
+    const cb = document.getElementById('dl-day-' + d);
+    if (cb) cb.checked = (daily.repeatDays || []).includes(Number(d));
+  });
+  updateFreqUI();
+  document.querySelector('#modal-daily .modal-title').textContent = '修改日常任务';
+  openModal('modal-daily');
+}
+
 // ── ADD DAILY MODAL ──
 export function openAddDailyModal() {
+  editingDailyId = null;
+  document.querySelector('#modal-daily .modal-title').textContent = '添加日常任务';
   // 重置表单
   document.getElementById('dl-name').value = '';
   document.getElementById('dl-type').value = 'B';
@@ -136,8 +158,8 @@ export function saveDaily() {
   const name = document.getElementById('dl-name').value.trim();
   if (!name) { toast('请填写任务名称'); return; }
 
-  const freq   = document.getElementById('dl-freq').value;
-  const everyX = parseInt(document.getElementById('dl-everyx').value) || 1;
+  const freq       = document.getElementById('dl-freq').value;
+  const everyX     = parseInt(document.getElementById('dl-everyx').value) || 1;
   const repeatDays = ['0','1','2','3','4','5','6']
     .filter(d => document.getElementById('dl-day-' + d)?.checked)
     .map(Number);
@@ -147,25 +169,42 @@ export function saveDaily() {
     return;
   }
 
-  const daily = {
-    id:            Date.now(),
-    name,
-    type:          document.getElementById('dl-type').value,
-    frequency:     freq,
-    repeatDays:    freq === 'weekly' ? repeatDays : [],
-    everyX:        freq === 'custom' ? everyX : 1,
-    startDate:     document.getElementById('dl-start').value || todayStr(),
-    streak:        0,
-    lastCompleted: null,
-    createdAt:     new Date().toISOString(),
-  };
+  const isEdit = editingDailyId !== null;
 
-  state.dailies.push(daily);
+  if (isEdit) {
+    const idx = state.dailies.findIndex(d => d.id === editingDailyId);
+    if (idx !== -1) {
+      Object.assign(state.dailies[idx], {
+        name,
+        type:       document.getElementById('dl-type').value,
+        frequency:  freq,
+        repeatDays: freq === 'weekly' ? repeatDays : [],
+        everyX:     freq === 'custom' ? everyX : 1,
+        startDate:  document.getElementById('dl-start').value || todayStr(),
+      });
+    }
+    editingDailyId = null;
+    document.querySelector('#modal-daily .modal-title').textContent = '添加日常任务';
+  } else {
+    state.dailies.push({
+      id:            Date.now(),
+      name,
+      type:          document.getElementById('dl-type').value,
+      frequency:     freq,
+      repeatDays:    freq === 'weekly' ? repeatDays : [],
+      everyX:        freq === 'custom' ? everyX : 1,
+      startDate:     document.getElementById('dl-start').value || todayStr(),
+      streak:        0,
+      lastCompleted: null,
+      createdAt:     new Date().toISOString(),
+    });
+  }
+
   saveKey('dailies');
   closeModal('modal-daily');
-  renderDailies();
+  _renderAll();
   triggerSave();
-  toast(`已添加日常：${name}`);
+  toast(isEdit ? '日常已更新 ✓' : `已添加日常：${name}`);
 }
 
 // ── HELPERS ──
@@ -186,7 +225,7 @@ function renderDailyCard(d) {
   return `
     <div class="habit-card">
       <div class="habit-check" style="background:${color}" onclick="completeDaily(${d.id})">✓</div>
-      <div class="habit-body">
+      <div class="habit-body" style="cursor:pointer" onclick="openEditDailyModal(${d.id})">
         <div class="habit-name">${d.name}</div>
         <div class="habit-meta">
           <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>

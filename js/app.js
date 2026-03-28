@@ -6,12 +6,14 @@ import {
   selectType, submitTask,
   completeTodoTask, deleteTodoTask,
   addStep, removeStep, toggleStep,
+  openEditTodoModal, saveTodoEdit,
+  addEditStep, removeEditStep,
 } from './tasks.js';
 import {
   renderRewards,
   init as initRewards,
   openRedeem, updateRedeemPreview,
-  confirmRedeem, openAddReward, saveReward,
+  confirmRedeem, openAddReward, openEditReward, saveReward,
 } from './rewards.js';
 import {
   renderFinance,
@@ -34,7 +36,7 @@ import { exportData, importData } from './io.js';
 import {
   init as initDailies,
   completeDaily, deleteDaily,
-  openAddDailyModal, saveDaily, updateFreqUI,
+  openAddDailyModal, openEditDailyModal, saveDaily, updateFreqUI,
 } from './dailies.js';
 import { openModal, closeModal, toast } from './ui.js';
 
@@ -129,6 +131,14 @@ window.deleteTodoTask       = deleteTodoTask;
 window.addStep              = addStep;
 window.removeStep           = removeStep;
 window.toggleStep           = toggleStep;
+window.openEditTodoModal    = openEditTodoModal;
+window.saveTodoEdit         = saveTodoEdit;
+window.addEditStep          = addEditStep;
+window.removeEditStep       = removeEditStep;
+// Dailies
+window.openEditDailyModal   = openEditDailyModal;
+// Rewards
+window.openEditReward       = openEditReward;
 // Rewards
 window.openAddReward        = openAddReward;
 window.saveReward           = saveReward;

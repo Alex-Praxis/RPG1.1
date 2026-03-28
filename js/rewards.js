@@ -5,8 +5,9 @@ import { triggerSave } from './sync.js';
 import { toast, openModal, closeModal } from './ui.js';
 
 // ── MODULE-PRIVATE ──
-let _renderAll      = () => {};
-let currentRewardId = null;
+let _renderAll       = () => {};
+let currentRewardId  = null;
+let editingRewardId  = null;
 
 export function init(renderAllFn) {
   _renderAll = renderAllFn;
@@ -26,6 +27,8 @@ export function renderRewards() {
         const can = r.cost <= pts.current;
         return `<div class="reward-card${can ? ' affordable' : ''}" onclick="openRedeem('${r.id}')">
           <div class="reward-num">${r.id}</div>
+          <button class="btn btn-sm" style="position:absolute;top:8px;right:8px;padding:2px 8px;font-size:10px;opacity:.55;z-index:1"
+            onclick="event.stopPropagation();openEditReward('${r.id}')">✏</button>
           <div class="reward-name">${r.name}</div>
           <div class="reward-cost">${r.cost} <span style="font-size:12px;color:var(--text3)">pts</span></div>
           <div class="reward-meta">${r.rmb ? '¥' + r.rmb + ' · ' : ''}${TYPE_LABELS[r.type] || r.type}</div>
@@ -93,8 +96,25 @@ export function confirmRedeem() {
 
 // ── OPEN ADD REWARD ──
 export function openAddReward() {
+  editingRewardId = null;
+  document.querySelector('#modal-reward .modal-title').textContent = '添加奖励';
   ['rw-name','rw-cost','rw-rmb'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('rw-min').value = 1;
+  document.getElementById('rw-min').value  = 1;
+  document.getElementById('rw-type').value = 'exp';
+  openModal('modal-reward');
+}
+
+// ── OPEN EDIT REWARD ──
+export function openEditReward(id) {
+  const r = state.rewards.find(x => x.id === id);
+  if (!r) return;
+  editingRewardId = id;
+  document.querySelector('#modal-reward .modal-title').textContent = '修改奖励';
+  document.getElementById('rw-name').value = r.name;
+  document.getElementById('rw-cost').value = r.cost;
+  document.getElementById('rw-rmb').value  = r.rmb || '';
+  document.getElementById('rw-min').value  = r.min || 1;
+  document.getElementById('rw-type').value = r.type;
   openModal('modal-reward');
 }
 
@@ -102,19 +122,26 @@ export function openAddReward() {
 export function saveReward() {
   const name = document.getElementById('rw-name').value.trim();
   if (!name) { toast('请填写奖励名称'); return; }
-  const maxId = state.rewards.reduce((m, r) => Math.max(m, parseInt(r.id) || 0), 0);
-  state.rewards.push({
-    id:   String(maxId + 1).padStart(3, '0'),
+  const data = {
     name,
     cost: parseInt(document.getElementById('rw-cost').value) || 0,
     rmb:  parseInt(document.getElementById('rw-rmb').value)  || 0,
     min:  parseInt(document.getElementById('rw-min').value)  || 1,
     type: document.getElementById('rw-type').value,
-    archived: false,
-  });
+  };
+  if (editingRewardId) {
+    const r = state.rewards.find(x => x.id === editingRewardId);
+    if (r) Object.assign(r, data);
+    editingRewardId = null;
+    document.querySelector('#modal-reward .modal-title').textContent = '添加奖励';
+    toast('奖励已更新 ✓');
+  } else {
+    const maxId = state.rewards.reduce((m, r) => Math.max(m, parseInt(r.id) || 0), 0);
+    state.rewards.push({ id: String(maxId + 1).padStart(3, '0'), ...data, archived: false });
+    toast('奖励已添加 ✓');
+  }
   saveKey('rewards');
   closeModal('modal-reward');
   renderRewards();
   triggerSave();
-  toast('奖励已添加 ✓');
 }

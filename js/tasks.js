@@ -1,12 +1,15 @@
 import { TYPE_COLORS, typeLabels } from './constants.js';
 import { state, saveKey } from './state.js';
 import { triggerSave } from './sync.js';
-import { toast } from './ui.js';
+import { toast, openModal, closeModal } from './ui.js';
 
 // ── MODULE-PRIVATE ──
-let _renderAll   = () => {};
-let selectedType = null;
-let stepCounter  = 0;
+let _renderAll      = () => {};
+let selectedType    = null;
+let stepCounter     = 0;
+let editingTodoId   = null;
+let editSteps       = [];
+let editStepCounter = 0;
 
 export function init(renderAllFn) {
   _renderAll = renderAllFn;
@@ -28,7 +31,7 @@ export function selectType(type) {
   btnTodo.disabled = false; btnTodo.style.opacity = '1'; btnTodo.style.cursor = 'pointer';
 }
 
-// ── STEP MANAGEMENT (for quick entry form) ──
+// ── STEP MANAGEMENT (quick entry) ──
 export function addStep() {
   const container = document.getElementById('steps-container');
   const inputs    = document.getElementById('step-inputs');
@@ -65,6 +68,62 @@ export function toggleStep(todoId, stepId) {
   triggerSave();
 }
 
+// ── EDIT TODO MODAL ──
+export function openEditTodoModal(id) {
+  const task = state.todoList.find(t => t.id === id);
+  if (!task) return;
+  editingTodoId   = id;
+  editSteps       = (task.steps || []).map(s => ({ ...s }));
+  editStepCounter = 0;
+  document.getElementById('edit-todo-note').value = task.note || '';
+  document.getElementById('edit-todo-date').value = task.date;
+  document.getElementById('edit-todo-type').value = task.type;
+  renderEditStepInputs();
+  openModal('modal-todo');
+}
+
+function renderEditStepInputs() {
+  const el = document.getElementById('edit-step-inputs');
+  if (!el) return;
+  el.innerHTML = editSteps.map(s => `
+    <div id="edit-step-row-${s.id}" style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <input type="text" id="edit-step-text-${s.id}" value="${s.text.replace(/"/g,'&quot;')}"
+        placeholder="步骤描述…" style="flex:1;font-size:12px">
+      <button class="btn btn-sm btn-danger" style="padding:4px 9px;flex-shrink:0"
+        onclick="removeEditStep(${s.id})">×</button>
+    </div>`).join('');
+}
+
+export function addEditStep() {
+  const id = -(++editStepCounter);
+  editSteps.push({ id, text: '', done: false });
+  renderEditStepInputs();
+  document.getElementById(`edit-step-text-${id}`)?.focus();
+}
+
+export function removeEditStep(id) {
+  editSteps = editSteps.filter(s => s.id !== id);
+  renderEditStepInputs();
+}
+
+export function saveTodoEdit() {
+  if (!editingTodoId) return;
+  const task = state.todoList.find(t => t.id === editingTodoId);
+  if (!task) return;
+  task.note = document.getElementById('edit-todo-note').value.trim();
+  task.date = document.getElementById('edit-todo-date').value;
+  task.type = document.getElementById('edit-todo-type').value;
+  task.steps = editSteps
+    .map(s => ({ ...s, text: (document.getElementById(`edit-step-text-${s.id}`)?.value || '').trim() }))
+    .filter(s => s.text);
+  saveKey('todoList');
+  closeModal('modal-todo');
+  renderTodoList();
+  triggerSave();
+  toast('待办已更新 ✓');
+  editingTodoId = null;
+}
+
 // ── SUBMIT TASK ──
 export function submitTask(action) {
   if (!selectedType) return;
@@ -72,7 +131,6 @@ export function submitTask(action) {
   const note = document.getElementById('entry-note').value;
 
   if (action === 'todo') {
-    // Collect steps from form inputs
     const steps = Array.from(document.querySelectorAll('[id^="step-text-"]'))
       .map(input => input.value.trim())
       .filter(Boolean)
@@ -92,7 +150,7 @@ export function submitTask(action) {
     toast(`已记录完成：${typeLabels[selectedType]}`);
   }
 
-  // 重置表单
+  // 重置
   document.getElementById('entry-note').value = '';
   document.getElementById('step-inputs').innerHTML = '';
   document.getElementById('steps-container').style.display = 'none';
@@ -153,16 +211,15 @@ export function renderTodoList() {
         const steps  = t.steps || [];
         const doneCount = steps.filter(s => s.done).length;
 
-        // 步骤进度角标
         const progressBadge = steps.length > 0
           ? `<span style="font-size:10px;font-family:var(--mono);color:${doneCount===steps.length?'var(--green)':'var(--text3)'};background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1px 7px">${doneCount}/${steps.length}</span>`
           : '';
 
-        // 子步骤列表
         const stepsHtml = steps.length > 0
           ? `<div style="margin-top:8px;display:grid;gap:4px">
               ${steps.map(s => `
-                <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:2px 0" onclick="toggleStep(${t.id},${s.id})">
+                <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:2px 0"
+                  onclick="event.stopPropagation();toggleStep(${t.id},${s.id})">
                   <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid ${s.done ? color : 'var(--border2)'};background:${s.done ? color : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s">
                     ${s.done ? '<span style="color:#fff;font-size:9px;line-height:1">✓</span>' : ''}
                   </div>
@@ -173,7 +230,7 @@ export function renderTodoList() {
 
         return `<div class="habit-card">
           <div class="habit-check" style="background:${color}" onclick="completeTodoTask(${t.id})">✓</div>
-          <div class="habit-body">
+          <div class="habit-body" style="cursor:pointer" onclick="openEditTodoModal(${t.id})">
             <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
               <span class="habit-name" style="flex:1;min-width:0">${t.note||'（无备注）'}</span>
               ${progressBadge}
@@ -185,7 +242,8 @@ export function renderTodoList() {
             </div>
           </div>
           <div class="habit-right">
-            <button class="btn btn-sm btn-danger" style="padding:4px 9px;font-size:11px" onclick="deleteTodoTask(${t.id})">删</button>
+            <button class="btn btn-sm btn-danger" style="padding:4px 9px;font-size:11px"
+              onclick="event.stopPropagation();deleteTodoTask(${t.id})">删</button>
           </div>
         </div>`;
       }).join('');
