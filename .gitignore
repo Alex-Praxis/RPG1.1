@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.backup.json
+os-backup-*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Old versions
+life-rpg_*.html
+*-old.html
+
+# Dependencies (if ever added)
+node_modules/
+package-lock.json
