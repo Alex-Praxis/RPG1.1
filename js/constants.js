@@ -1,5 +1,5 @@
 // ── CONSTANTS ──
-export const SCORES = {N:-10, A:2, B:5, C:30, D:125};
+export const SCORES = {N:-10, A:2, B:5, C:30, D:150};
 export const TYPE_LABELS = {time:'时间奖励', exp:'体验消费', item:'实物消费'};
 export const TYPE_COLORS = {N:'var(--red)', A:'var(--text2)', B:'var(--amber)', C:'var(--blue)', D:'var(--purple)'};
 export const typeLabels  = {N:'噪声', A:'基线维持', B:'小改善', C:'核心/复利', D:'极限考验'};
