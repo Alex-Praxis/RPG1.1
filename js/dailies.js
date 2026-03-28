@@ -243,17 +243,19 @@ export function renderDailiesForDashboard() {
   const { due, done } = getDailiesForToday();
   const container = document.getElementById('dl-today-dailies');
   if (!container) return;
-  // 更新角标
+  // 更新角标（仅显示待完成数）
   const badge = document.getElementById('daily-count');
   if (badge) badge.textContent = due.length;
-  const dueHtml  = due.map(renderDailyCard).join('');
-  const doneHtml = done.length > 0
-    ? `<div style="height:1px;background:var(--border);margin:6px 0 8px"></div>` + done.map(renderDoneCard).join('')
+  if (due.length === 0 && done.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--text3)">
+      <div style="font-size:26px;margin-bottom:8px">🎉</div>
+      <div style="font-size:12px">今日无日常任务</div>
+    </div>`;
+    return;
+  }
+  // 分割线只在两部分都存在时插入
+  const sep = due.length > 0 && done.length > 0
+    ? `<div style="height:1px;background:var(--border);margin:6px 0 8px"></div>`
     : '';
-  container.innerHTML = due.length === 0 && done.length === 0
-    ? `<div style="text-align:center;padding:32px 16px;color:var(--text3)">
-        <div style="font-size:26px;margin-bottom:8px">🎉</div>
-        <div style="font-size:12px">今日日常全部完成</div>
-      </div>`
-    : dueHtml + doneHtml;
+  container.innerHTML = due.map(renderDailyCard).join('') + sep + done.map(renderDoneCard).join('');
 }

@@ -27,7 +27,7 @@
 <!-- ══ PAGE: 仪表盘 ══ -->
 <div class="page active" id="page-dashboard">
 
-  <!-- 顶部：三列统计 -->
+  <!-- 顶部统计 -->
   <div class="grid3 section">
     <div class="card">
       <div class="card-title">积分汇总</div>
@@ -57,68 +57,67 @@
     </div>
   </div>
 
-  <!-- 快速录入（全宽） -->
-  <div class="card section">
-    <div class="card-title">快速录入</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-      <div><label>日期</label><input type="date" id="entry-date"></div>
-      <div><label>备注（可选）</label><input type="text" id="entry-note" placeholder="eg. 写完提案、去健身"></div>
-    </div>
-    <div class="difficulty-wrap">
-      <button id="difficulty-toggle" class="difficulty-toggle"
-        onclick="document.getElementById('difficulty-dropdown').classList.toggle('open')">
-        <span id="difficulty-label">选择难度 ▾</span>
-      </button>
-      <div id="difficulty-dropdown" class="difficulty-dropdown">
-        <button class="diff-item" id="type-btn-N" onclick="selectType('N')">
-          <span class="diff-key" style="color:var(--red)">N</span>
-          <span class="diff-name">噪声</span>
-          <span class="diff-score" style="color:var(--red)">−10</span>
-        </button>
-        <button class="diff-item" id="type-btn-A" onclick="selectType('A')">
-          <span class="diff-key" style="color:var(--text2)">A</span>
-          <span class="diff-name">基线维持</span>
-          <span class="diff-score">+2</span>
-        </button>
-        <button class="diff-item" id="type-btn-B" onclick="selectType('B')">
-          <span class="diff-key" style="color:var(--amber)">B</span>
-          <span class="diff-name">小改善</span>
-          <span class="diff-score">+5</span>
-        </button>
-        <button class="diff-item" id="type-btn-C" onclick="selectType('C')">
-          <span class="diff-key" style="color:var(--blue)">C</span>
-          <span class="diff-name">核心/复利</span>
-          <span class="diff-score">+30</span>
-        </button>
-        <button class="diff-item" id="type-btn-D" onclick="selectType('D')">
-          <span class="diff-key" style="color:var(--purple)">D</span>
-          <span class="diff-name">极限考验</span>
-          <span class="diff-score">+125</span>
-        </button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
-      <button id="action-todo" class="btn" disabled onclick="submitTask('todo')" style="opacity:0.4;cursor:not-allowed;border-color:var(--border2)">+ 加入待办</button>
-    </div>
-  </div>
-
-  <!-- 今日汇总 -->
-  <div class="card section">
-    <div class="card-title">今日汇总</div>
-    <div id="today-preview" style="display:none">
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <div id="today-breakdown" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-        <div style="margin-left:auto;font-family:var(--mono);font-size:22px;font-weight:700" id="today-total">+0</div>
-      </div>
-    </div>
-    <div id="today-empty" style="color:var(--text3);font-size:12px">今日暂无已完成任务</div>
-  </div>
-
-  <!-- ══ 并列双栏：日常 + 待办（Habitica 风格） ══ -->
+  <!-- ══ 并列双栏：[快速录入 + 待办] | [日常] ══ -->
   <div class="dashboard-grid section">
 
-    <!-- 左栏：日常任务 -->
+    <!-- 左栏：快速录入 + 分割线 + 待办事项 -->
+    <div class="card">
+      <!-- 快速录入 -->
+      <div class="card-title">快速录入</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label>日期</label><input type="date" id="entry-date"></div>
+        <div><label>备注（可选）</label><input type="text" id="entry-note" placeholder="eg. 写完提案、去健身"></div>
+      </div>
+      <div class="difficulty-wrap">
+        <button id="difficulty-toggle" class="difficulty-toggle"
+          onclick="document.getElementById('difficulty-dropdown').classList.toggle('open')">
+          <span id="difficulty-label">选择难度 ▾</span>
+        </button>
+        <div id="difficulty-dropdown" class="difficulty-dropdown">
+          <button class="diff-item" id="type-btn-N" onclick="selectType('N')">
+            <span class="diff-key" style="color:var(--red)">N</span>
+            <span class="diff-name">噪声</span>
+            <span class="diff-score" style="color:var(--red)">−10</span>
+          </button>
+          <button class="diff-item" id="type-btn-A" onclick="selectType('A')">
+            <span class="diff-key" style="color:var(--text2)">A</span>
+            <span class="diff-name">基线维持</span>
+            <span class="diff-score">+2</span>
+          </button>
+          <button class="diff-item" id="type-btn-B" onclick="selectType('B')">
+            <span class="diff-key" style="color:var(--amber)">B</span>
+            <span class="diff-name">小改善</span>
+            <span class="diff-score">+5</span>
+          </button>
+          <button class="diff-item" id="type-btn-C" onclick="selectType('C')">
+            <span class="diff-key" style="color:var(--blue)">C</span>
+            <span class="diff-name">核心/复利</span>
+            <span class="diff-score">+30</span>
+          </button>
+          <button class="diff-item" id="type-btn-D" onclick="selectType('D')">
+            <span class="diff-key" style="color:var(--purple)">D</span>
+            <span class="diff-name">极限考验</span>
+            <span class="diff-score">+125</span>
+          </button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0">
+        <button id="action-done" class="btn btn-primary" disabled onclick="submitTask('done')" style="opacity:0.4;cursor:not-allowed">✓ 标记完成</button>
+        <button id="action-todo" class="btn" disabled onclick="submitTask('todo')" style="opacity:0.4;cursor:not-allowed;border-color:var(--border2)">+ 加入待办</button>
+      </div>
+
+      <!-- 分割线 -->
+      <hr class="divider" style="margin:18px 0 14px">
+
+      <!-- 待办事项 -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--text3);text-transform:uppercase">待办事项</span>
+        <span class="task-col-badge purple" id="todo-count" style="font-size:10px;padding:1px 7px">0</span>
+      </div>
+      <div id="todo-list"></div>
+    </div>
+
+    <!-- 右栏：日常任务 -->
     <div>
       <div class="task-col-header">
         <div class="task-col-title">
@@ -130,21 +129,24 @@
       <div id="dl-today-dailies"></div>
     </div>
 
-    <!-- 右栏：待办事项 -->
-    <div>
-      <div class="task-col-header">
-        <div class="task-col-title">
-          待办事项
-          <span class="task-col-badge purple" id="todo-count">0</span>
-        </div>
-      </div>
-      <div id="todo-list"></div>
-    </div>
-
   </div>
 
-  <!-- 近期记录 -->
+  <!-- 今日汇总 + 近期记录（合并卡片） -->
   <div class="card">
+    <!-- 今日汇总 -->
+    <div class="card-title">今日汇总</div>
+    <div id="today-preview" style="display:none">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div id="today-breakdown" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div style="margin-left:auto;font-family:var(--mono);font-size:22px;font-weight:700" id="today-total">+0</div>
+      </div>
+    </div>
+    <div id="today-empty" style="color:var(--text3);font-size:12px">今日暂无已完成任务</div>
+
+    <!-- 分割线 -->
+    <hr class="divider" style="margin:16px 0">
+
+    <!-- 近期记录 -->
     <div class="card-title">近期记录</div>
     <table class="tbl">
       <thead><tr><th>日期</th><th>N</th><th>A</th><th>B</th><th>C</th><th>D</th><th>小计</th><th>备注</th><th></th></tr></thead>
@@ -199,7 +201,6 @@
     <button class="data-tab" data-tab="log" onclick="showDataTab('log',this)">任务日志</button>
   </div>
 
-  <!-- 财务子页 -->
   <div id="data-finance">
     <div class="card section">
       <div class="card-title">财务汇总</div>
@@ -241,7 +242,6 @@
     </div>
   </div>
 
-  <!-- 日志子页 -->
   <div id="data-log" style="display:none">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -331,12 +331,10 @@
 <div class="modal-overlay" id="modal-daily">
   <div class="modal">
     <div class="modal-title">添加日常任务</div>
-
     <div class="form-row">
       <label>任务名称</label>
       <input type="text" id="dl-name" placeholder="eg. 早起跑步、冥想 10 分钟">
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="form-row">
         <label>积分类型</label>
@@ -352,7 +350,6 @@
         <input type="date" id="dl-start">
       </div>
     </div>
-
     <div class="form-row">
       <label>重复频率</label>
       <select id="dl-freq" onchange="updateFreqUI()">
@@ -361,7 +358,6 @@
         <option value="custom">每隔 N 天</option>
       </select>
     </div>
-
     <div id="dl-weekly-opts" style="display:none;margin-bottom:14px">
       <label style="margin-bottom:8px">选择重复的星期</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -374,7 +370,6 @@
         <label style="display:flex;align-items:center;gap:4px;font-weight:400;font-size:13px;cursor:pointer"><input type="checkbox" id="dl-day-0"> 周日</label>
       </div>
     </div>
-
     <div id="dl-custom-opts" style="display:none;margin-bottom:14px">
       <label>每隔几天重复一次</label>
       <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
@@ -382,7 +377,6 @@
         <span style="color:var(--text2);font-size:13px">天</span>
       </div>
     </div>
-
     <div class="form-actions">
       <button class="btn" onclick="closeModal('modal-daily')">取消</button>
       <button class="btn btn-primary" onclick="saveDaily()">添加日常</button>
@@ -391,7 +385,6 @@
 </div>
 
 <div id="toast"></div>
-
 <script type="module" src="js/app.js"></script>
 </body>
 </html>
