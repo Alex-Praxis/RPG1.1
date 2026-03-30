@@ -211,12 +211,15 @@ export function saveDaily() {
 // 提取数据逻辑，便于复用
 function getDailiesForToday() {
   const today = todayStr();
-  return {
-    today,
-    due: state.dailies.filter(isDueToday),
-    done: state.dailies.filter(d => d.lastCompleted === today && !isDueToday(d)),
-    all: state.dailies
-  };
+  const due  = state.dailies.filter(isDueToday);
+  const done = state.dailies.filter(d => d.lastCompleted === today && !isDueToday(d));
+  // 已启动但今日不计（周期未到）——既不在 due 也不在 done
+  const dueIds  = new Set(due.map(d => d.id));
+  const doneIds = new Set(done.map(d => d.id));
+  const skipped = state.dailies.filter(d =>
+    d.startDate <= today && !dueIds.has(d.id) && !doneIds.has(d.id)
+  );
+  return { today, due, done, skipped, all: state.dailies };
 }
 
 // 渲染单条待完成日常任务的 HTML（Habitica 风格）
@@ -237,21 +240,36 @@ function renderDailyCard(d) {
     </div>`;
 }
 
-// 渲染单条已完成日常任务的 HTML（暗淡）
-function renderDoneCard(d) {
-  const color = TYPE_COLORS[d.type];
+// 渲染今日不计的任务（周期未到，灰色显示）
+function renderSkippedCard(d) {
   return `
-    <div class="habit-card done">
-      <div class="habit-check" style="background:${color}">✓</div>
-      <div class="habit-body">
-        <div class="habit-name">${d.name}</div>
+    <div class="habit-card" style="opacity:.45">
+      <div class="habit-check" style="background:var(--border2);cursor:default;font-size:13px;color:var(--text3)">—</div>
+      <div class="habit-body" style="cursor:pointer" onclick="openEditDailyModal(${d.id})">
+        <div class="habit-name" style="color:var(--text3)">${d.name}</div>
         <div class="habit-meta">
           <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
           <span>${freqLabel(d)}</span>
           ${d.streak > 0 ? `<span style="color:var(--amber)">🔥 ${d.streak}</span>` : ''}
         </div>
       </div>
-      <div class="habit-right"><span class="habit-streak">▶▶ ${d.streak}</span></div>
+      <div class="habit-right"><span class="habit-streak">今日不计</span></div>
+    </div>`;
+}
+
+// 渲染单条已完成日常任务的 HTML（绿色勾 + 删除线）
+function renderDoneCard(d) {
+  return `
+    <div class="habit-card done">
+      <div class="habit-check" style="background:var(--green)">✓</div>
+      <div class="habit-body">
+        <div class="habit-name" style="text-decoration:line-through;opacity:.7">${d.name}</div>
+        <div class="habit-meta">
+          <span class="tag tag-${d.type}">${typeLabels[d.type]}</span>
+          ${d.streak > 0 ? `<span style="color:var(--amber)">🔥 ${d.streak}</span>` : ''}
+        </div>
+      </div>
+      <div class="habit-right"><span class="habit-streak" style="color:var(--green)">✓ done</span></div>
     </div>`;
 }
 
@@ -279,22 +297,38 @@ export function renderDailies() {
 
 // 仪表盘渲染（Habitica 风格单容器）
 export function renderDailiesForDashboard() {
-  const { due, done } = getDailiesForToday();
+  const { due, done, skipped } = getDailiesForToday();
   const container = document.getElementById('dl-today-dailies');
   if (!container) return;
-  // 更新角标（仅显示待完成数）
+
+  // 角标：显示待完成数
   const badge = document.getElementById('daily-count');
-  if (badge) badge.textContent = due.length;
-  if (due.length === 0 && done.length === 0) {
+  if (badge) {
+    badge.textContent = due.length;
+    badge.title = done.length > 0 ? `今日已完成 ${done.length} 项` : '';
+  }
+
+  if (due.length === 0 && done.length === 0 && skipped.length === 0) {
     container.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--text3)">
       <div style="font-size:26px;margin-bottom:8px">🎉</div>
-      <div style="font-size:12px">今日无日常任务</div>
+      <div style="font-size:12px">暂无日常任务</div>
     </div>`;
     return;
   }
-  // 分割线只在两部分都存在时插入
-  const sep = due.length > 0 && done.length > 0
-    ? `<div style="height:1px;background:var(--border);margin:6px 0 8px"></div>`
-    : '';
-  container.innerHTML = due.map(renderDailyCard).join('') + sep + done.map(renderDoneCard).join('');
+
+  function sep(label, color, topMargin) {
+    return `<div style="display:flex;align-items:center;gap:8px;margin:${topMargin ? '10px' : '0px'} 0 8px">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:11px;color:${color};font-weight:600;letter-spacing:.04em">${label}</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>`;
+  }
+
+  const doneSep    = done.length    > 0 ? sep(`✓ 已完成 ${done.length}`,    'var(--green)',  due.length > 0)    : '';
+  const skippedSep = skipped.length > 0 ? sep(`今日不计 ${skipped.length}`, 'var(--text3)', due.length > 0 || done.length > 0) : '';
+
+  container.innerHTML =
+    due.map(renderDailyCard).join('') +
+    doneSep + done.map(renderDoneCard).join('') +
+    skippedSep + skipped.map(renderSkippedCard).join('');
 }

@@ -26,6 +26,7 @@ export function getAppData() {
     financeLog: state.financeLog,
     rewards:    state.rewards,
     budget:     state.budget,
+    dailies:    state.dailies,
   };
 }
 
@@ -79,6 +80,7 @@ export function applyCloudData(data) {
   if (data.financeLog) { state.financeLog = data.financeLog; saveKey('financeLog'); }
   if (data.rewards)    { state.rewards    = data.rewards;    saveKey('rewards'); }
   if (data.budget)     { state.budget     = data.budget;     saveKey('budget'); }
+  if (data.dailies)    { state.dailies    = data.dailies;    saveKey('dailies'); }
   _renderAll();
 }
 
