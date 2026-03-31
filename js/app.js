@@ -31,6 +31,7 @@ import {
   cloudLoad, applyCloudData, triggerSave,
   openSyncSetup, clearSync,
   initSync as runInitSync,
+  copySyncCode, decodeSyncCode, connectBySyncCode,
 } from './sync.js';
 import { exportData, importData } from './io.js';
 import {
@@ -120,6 +121,9 @@ window.showDataTab          = showDataTab;
 window.openSyncSetup        = openSyncSetup;
 window.clearSync            = clearSync;
 window.initSync             = runInitSync;
+window.copySyncCode         = copySyncCode;
+window.decodeSyncCode       = decodeSyncCode;
+window.connectBySyncCode    = connectBySyncCode;
 // IO
 window.exportData           = exportData;
 window.importData           = importData;

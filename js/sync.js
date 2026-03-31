@@ -141,18 +141,62 @@ export function clearSync() {
   setSyncDot('');
   document.getElementById('sync-api-key').value = '';
   document.getElementById('sync-bin-id').value = '';
-  document.getElementById('sync-bin-row').style.display = 'none';
+  document.getElementById('sync-code-display').value = '';
+  document.getElementById('sync-configured-section').style.display = 'none';
   document.getElementById('sync-status-text').textContent = '';
   toast('同步配置已清除');
 }
 
+// ── SYNC CODE ──
+function makeSyncCode(apiKey, binId) {
+  return btoa(encodeURIComponent(apiKey + '|||' + binId));
+}
+function parseSyncCode(code) {
+  try {
+    const str = decodeURIComponent(atob(code.trim()));
+    const [apiKey, binId] = str.split('|||');
+    return (apiKey && binId) ? { apiKey, binId } : null;
+  } catch { return null; }
+}
+export function decodeSyncCode(code) {
+  if (!code) return;
+  const parsed = parseSyncCode(code);
+  if (parsed) {
+    document.getElementById('sync-api-key').value = parsed.apiKey;
+    document.getElementById('sync-bin-id').value  = parsed.binId;
+    document.getElementById('sync-status-text').textContent = '已解析同步码 ✓ 点「连接」确认';
+  }
+}
+export function connectBySyncCode() {
+  const code = document.getElementById('sync-code-input').value.trim();
+  const parsed = parseSyncCode(code);
+  if (!parsed) { toast('同步码无效，请重新复制'); return; }
+  document.getElementById('sync-api-key').value = parsed.apiKey;
+  document.getElementById('sync-bin-id').value  = parsed.binId;
+  initSync();
+}
+export function copySyncCode() {
+  const code = document.getElementById('sync-code-display').value;
+  navigator.clipboard.writeText(code).then(() => toast('同步码已复制 ✓')).catch(() => {
+    document.getElementById('sync-code-display').select();
+    document.execCommand('copy');
+    toast('同步码已复制 ✓');
+  });
+}
+
 // ── OPEN SYNC SETUP ──
 export function openSyncSetup() {
+  const configured = !!(state.syncCfg.apiKey && state.syncCfg.binId);
+  document.getElementById('sync-configured-section').style.display = configured ? 'block' : 'none';
+  document.getElementById('sync-setup-section').style.display = 'block';
   document.getElementById('sync-api-key').value = state.syncCfg.apiKey || '';
   document.getElementById('sync-bin-id').value  = state.syncCfg.binId  || '';
-  document.getElementById('sync-bin-row').style.display = state.syncCfg.binId ? 'block' : 'none';
-  document.getElementById('sync-status-text').textContent = state.syncCfg.binId
-    ? '已配置云同步，点击「立即同步」可手动拉取最新数据'
-    : '尚未配置，按上方步骤操作';
+  document.getElementById('sync-code-input').value = '';
+  if (configured) {
+    document.getElementById('sync-code-display').value = makeSyncCode(state.syncCfg.apiKey, state.syncCfg.binId);
+    document.getElementById('sync-status-text').textContent = '已配置云同步 · 点「初始化/连接」可立即拉取';
+  } else {
+    document.getElementById('sync-status-text').textContent = '';
+  }
   openModal('modal-sync');
 }

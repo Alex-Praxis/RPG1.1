@@ -316,25 +316,50 @@
 <div class="modal-overlay" id="modal-sync">
   <div class="modal">
     <div class="modal-title">☁ 云同步设置</div>
-    <div class="sync-info-box">
-      使用 <b>JSONBin.io</b> 实现免费云同步，手机和电脑数据自动同步。<br>
-      第一步：浏览器打开 <b>jsonbin.io</b>，注册免费账号<br>
-      第二步：登录后点击左侧 <b>API Keys</b>，创建一个 <b>Master Key</b><br>
-      第三步：把 Key 粘贴到下方，点击「初始化」即可
+
+    <!-- 已配置：显示同步码 -->
+    <div id="sync-configured-section" style="display:none">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">同步已开启 ✓ &nbsp;—&nbsp; 在新设备上粘贴「同步码」即可连接</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+        <input type="text" id="sync-code-display" readonly
+          style="flex:1;font-family:var(--mono);font-size:11px;background:var(--bg3);color:var(--text2)">
+        <button class="btn btn-sm" onclick="copySyncCode()" style="white-space:nowrap">复制同步码</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px">同步码包含你的密钥，请勿分享给他人</div>
     </div>
-    <div class="form-row">
-      <label>API Key（Master Key）</label>
-      <input type="password" id="sync-api-key" placeholder="$2b$10$..." autocomplete="off">
+
+    <!-- 未配置 or 新设备：初始化 / 粘贴同步码 -->
+    <div id="sync-setup-section">
+      <div class="sync-info-box" id="sync-info-new">
+        <b>首次设置：</b>打开 <b>jsonbin.io</b> 注册 → 左侧 <b>API Keys</b> 创建 Master Key → 粘贴到下方点「初始化」<br>
+        <b>其他设备：</b>粘贴主设备上复制的「同步码」→ 点「连接」
+      </div>
+      <!-- 同步码粘贴（新设备） -->
+      <div class="form-row">
+        <label>同步码（从已有设备复制）<span style="color:var(--text3);font-weight:400"> — 可选</span></label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="sync-code-input" placeholder="粘贴同步码…"
+            style="flex:1;font-family:var(--mono);font-size:11px" oninput="decodeSyncCode(this.value)">
+          <button class="btn btn-sm btn-primary" onclick="connectBySyncCode()">连接</button>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin:4px 0 10px">— 或手动填写 —</div>
+      <div class="form-row">
+        <label>API Key（Master Key）</label>
+        <input type="password" id="sync-api-key" placeholder="$2b$10$..." autocomplete="off">
+      </div>
+      <div class="form-row">
+        <label>Bin ID <span style="color:var(--text3);font-weight:400"> — 已有同步时填写，留空则新建</span></label>
+        <input type="text" id="sync-bin-id" placeholder="留空 = 自动创建新存储"
+          style="font-family:var(--mono);font-size:12px">
+      </div>
     </div>
-    <div class="form-row" id="sync-bin-row" style="display:none">
-      <label>数据存储 ID（自动生成，请记住备用）</label>
-      <input type="text" id="sync-bin-id" readonly style="background:var(--bg3);font-family:var(--mono);font-size:12px">
-    </div>
+
     <div id="sync-status-text" style="font-size:12px;color:var(--text3);min-height:18px;margin-bottom:4px"></div>
     <div class="form-actions" style="margin-top:14px">
-      <button class="btn btn-danger btn-sm" onclick="clearSync()" style="margin-right:auto">清除同步配置</button>
+      <button class="btn btn-danger btn-sm" onclick="clearSync()" style="margin-right:auto">清除配置</button>
       <button class="btn" onclick="closeModal('modal-sync')">关闭</button>
-      <button class="btn btn-primary" onclick="initSync()">初始化 / 立即同步</button>
+      <button class="btn btn-primary" id="sync-init-btn" onclick="initSync()">初始化 / 连接</button>
     </div>
   </div>
 </div>
