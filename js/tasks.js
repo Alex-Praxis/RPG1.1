@@ -170,7 +170,8 @@ export function completeTodoTask(id) {
   const idx = state.todoList.findIndex(t => t.id === id);
   if (idx === -1) return;
   const task = state.todoList[idx];
-  const entry = { date: task.date, note: task.note, N:0, A:0, B:0, C:0, D:0 };
+  const today = new Date().toISOString().split('T')[0];
+  const entry = { date: today, note: task.note, N:0, A:0, B:0, C:0, D:0 };
   entry[task.type] = 1;
   state.taskLog.push(entry);
   saveKey('taskLog');
